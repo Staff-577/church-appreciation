@@ -1,0 +1,1370 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+<title>Church Appreciation Event Manager</title>
+<style>
+:root{
+  --primary:#1e3a8a; --primary-light:#3b5bb5; --accent:#c9a227;
+  --bg:#f4f6fb; --card:#ffffff; --text:#1f2937; --muted:#6b7280;
+  --border:#e5e7eb; --success:#047857; --warn:#b45309; --danger:#b91c1c;
+  --radius:12px; --shadow:0 1px 3px rgba(0,0,0,.08),0 1px 2px rgba(0,0,0,.04);
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  background:var(--bg); color:var(--text); font-size:15px; line-height:1.5;
+  -webkit-text-size-adjust:100%;
+}
+.app-header{
+  background:linear-gradient(135deg,var(--primary),var(--primary-light));
+  color:#fff; padding:14px 16px; display:flex; flex-wrap:wrap;
+  align-items:center; gap:10px; justify-content:space-between;
+}
+.brand{display:flex; align-items:center; gap:10px; min-width:0}
+.logo-sm{
+  height:40px; width:40px; object-fit:contain; background:#fff;
+  border-radius:8px; padding:2px; flex:0 0 auto;
+}
+.app-header h1{margin:0; font-size:17px; font-weight:700; letter-spacing:.2px}
+.app-header .sub{font-size:12px; opacity:.88; margin-top:2px}
+.toolbar{display:flex; flex-wrap:wrap; gap:6px}
+.btn{
+  border:1px solid rgba(255,255,255,.4); background:rgba(255,255,255,.12);
+  color:#fff; padding:7px 12px; border-radius:8px; font-size:13px;
+  cursor:pointer; font-weight:600; white-space:nowrap;
+}
+.btn:hover{background:rgba(255,255,255,.22)}
+.btn.ghost{background:transparent}
+.btn.solid{background:#fff; color:var(--primary); border-color:#fff}
+.btn.solid:hover{background:#eef2ff}
+.btn.blue{background:var(--primary); color:#fff; border-color:var(--primary)}
+.btn.soft{background:#eef2ff; color:var(--primary); border-color:#c7d2fe}
+.tabs{
+  display:flex; gap:6px; overflow-x:auto; padding:10px 12px;
+  background:#fff; border-bottom:1px solid var(--border);
+  position:sticky; top:0; z-index:10; -webkit-overflow-scrolling:touch;
+}
+.tab{
+  flex:0 0 auto; padding:8px 14px; border:1px solid var(--border);
+  background:#fff; color:var(--text); border-radius:999px;
+  font-size:13px; cursor:pointer; white-space:nowrap; font-weight:600;
+}
+.tab.active{background:var(--primary); color:#fff; border-color:var(--primary)}
+main{padding:14px; max-width:1300px; margin:0 auto}
+.tab-panel{display:none}
+.tab-panel.active{display:block}
+.card{
+  background:var(--card); border:1px solid var(--border); border-radius:var(--radius);
+  padding:16px; margin-bottom:16px; box-shadow:var(--shadow);
+}
+.card h2{margin:0 0 12px; font-size:16px; color:var(--primary)}
+.card h3{margin:16px 0 8px; font-size:14px; color:var(--primary)}
+.form-grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:12px}
+label.fld{display:flex; flex-direction:column; gap:4px; font-size:13px; color:var(--muted); font-weight:600}
+label.fld input, label.fld select, label.fld textarea{
+  padding:9px 10px; border:1px solid var(--border); border-radius:8px;
+  font-size:14px; color:var(--text); background:#fff; width:100%;
+  font-family:inherit;
+}
+label.fld input:focus, label.fld select:focus, label.fld textarea:focus{
+  outline:2px solid var(--primary-light); outline-offset:1px;
+}
+.row-actions{display:flex; gap:8px; flex-wrap:wrap; margin-bottom:10px; align-items:center}
+.table-wrap{overflow-x:auto; -webkit-overflow-scrolling:touch; border:1px solid var(--border); border-radius:10px}
+table{border-collapse:collapse; width:100%; font-size:13px; background:#fff}
+table.data{min-width:900px}
+th,td{border-bottom:1px solid var(--border); padding:6px 8px; text-align:left; vertical-align:middle}
+th{background:#f8fafc; font-size:12px; text-transform:uppercase; letter-spacing:.04em; color:var(--muted)}
+td.num, th.num{text-align:right}
+td input, td select{
+  width:100%; min-width:70px; padding:6px 8px; border:1px solid transparent;
+  border-radius:6px; font-size:13px; background:#fbfcfe; color:var(--text);
+  font-family:inherit;
+}
+td input:focus, td select:focus{outline:2px solid var(--primary-light); background:#fff; border-color:var(--primary-light)}
+td input[type=number]{text-align:right}
+td.computed{text-align:right; font-weight:700; color:var(--primary); white-space:nowrap}
+.sn{width:38px; text-align:center; color:var(--muted); font-size:12px}
+.del{
+  border:none; background:#fee2e2; color:var(--danger); width:28px; height:28px;
+  border-radius:6px; cursor:pointer; font-weight:700; line-height:1;
+}
+.del:hover{background:#fecaca}
+.empty{padding:20px; text-align:center; color:var(--muted); font-size:13px}
+.summary{display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:10px; margin-top:12px}
+.stat{background:#f8fafc; border:1px solid var(--border); border-radius:10px; padding:10px 12px}
+.stat .lbl{font-size:11px; text-transform:uppercase; letter-spacing:.05em; color:var(--muted); font-weight:700}
+.stat .val{font-size:18px; font-weight:800; color:var(--primary); margin-top:2px}
+.stat.green .val{color:var(--success)}
+.stat.red .val{color:var(--danger)}
+.badge{display:inline-block; padding:2px 8px; border-radius:999px; font-size:11px; font-weight:700}
+.badge.ok{background:#d1fae5; color:#065f46}
+.badge.pend{background:#fef3c7; color:#92400e}
+.badge.no{background:#fee2e2; color:#991b1b}
+.toast{
+  position:fixed; left:50%; bottom:20px; transform:translateX(-50%) translateY(20px);
+  background:#111827; color:#fff; padding:10px 16px; border-radius:999px;
+  font-size:13px; opacity:0; transition:.25s; pointer-events:none; z-index:100; max-width:90vw;
+  text-align:center;
+}
+.toast.show{opacity:1; transform:translateX(-50%) translateY(0)}
+.hint{font-size:12px; color:var(--muted); margin:6px 0 0}
+/* logo upload */
+.logo-row{display:flex; gap:16px; align-items:center; flex-wrap:wrap}
+.logo-box{
+  width:120px; height:120px; border:1px dashed var(--border); border-radius:12px;
+  display:flex; align-items:center; justify-content:center; background:#f8fafc;
+  overflow:hidden; flex:0 0 auto; color:var(--muted); font-size:12px; text-align:center;
+}
+.logo-box img{max-width:100%; max-height:100%; display:none}
+.logo-controls{display:flex; flex-direction:column; gap:8px}
+/* ===== CATERING GROUP CARDS ===== */
+.group-card{border:1px solid var(--border); border-radius:12px; margin-bottom:14px; background:#fff; overflow:hidden}
+.group-head{flex-wrap:wrap; display:flex; gap:8px; align-items:center; padding:10px 12px; background:#eef2ff; border-bottom:1px solid #c7d2fe}
+.group-head input{flex:1; min-width:0; padding:9px 10px; border:1px solid #c7d2fe; border-radius:8px; font-size:15px; font-weight:700; color:var(--primary); background:#fff; font-family:inherit}
+.group-head input[data-cfield="members"]{flex:0 0 130px; width:130px; font-size:13px; font-weight:600; text-align:right}
+.group-head .gtotal{font-weight:800; color:var(--primary); white-space:nowrap; font-size:14px}
+.group-body{padding:10px 12px}
+.item-row{display:flex; gap:8px; align-items:center; margin-bottom:8px}
+.item-row .sn{width:26px; flex:0 0 auto}
+.item-row input{padding:8px 10px; border:1px solid var(--border); border-radius:8px; font-size:14px; background:#fbfcfe; color:var(--text); font-family:inherit; min-width:0}
+.item-row input[data-cfield="name"]{flex:1}
+.item-row input[data-cfield="cost"]{width:110px; text-align:right; flex:0 0 110px}
+.item-row .itotal{flex:0 0 110px; text-align:right; font-weight:700; color:var(--primary); font-size:13px; white-space:nowrap}
+.item-row input:focus,.group-head input:focus{outline:2px solid var(--primary-light); background:#fff}
+@media(max-width:480px){ .item-row input[data-cfield="cost"]{width:80px; flex-basis:80px} .item-row .itotal{flex-basis:80px; font-size:12px} }
+/* ===== REPORT ===== */
+.report{background:#fff; padding:26px; border-radius:var(--radius); border:1px solid var(--border); box-shadow:var(--shadow)}
+.report-head{text-align:center; border-bottom:3px double var(--primary); padding-bottom:12px; margin-bottom:16px}
+.report-logo{max-height:80px; max-width:160px; object-fit:contain; margin:0 auto 8px; display:block}
+.report-church{font-size:15px; letter-spacing:.08em; text-transform:uppercase; color:var(--primary); font-weight:800}
+.report-motto{font-size:12px; color:#374151; font-style:italic; margin-top:2px}
+.report-head h1{margin:6px 0; font-size:20px; color:var(--primary)}
+.report-section{margin-bottom:20px}
+.report-section h3{
+  margin:0 0 8px; font-size:13.5px; color:#fff; background:var(--primary);
+  padding:6px 10px; border-radius:6px; letter-spacing:.04em; text-transform:uppercase;
+}
+.report table{width:100%; border-collapse:collapse; font-size:12px; margin-bottom:6px}
+.report th,.report td{border:1px solid #cbd5e1; padding:5px 7px; text-align:left}
+.report th{background:#e8eefc; color:#1e3a8a; font-size:11px; text-transform:uppercase}
+.report td.num,.report th.num{text-align:right}
+.report tr.grand td{border-top:2px solid var(--primary); border-bottom:2px solid var(--primary); font-weight:800; color:var(--primary); font-size:14px}
+.report .small{font-size:11px; color:#6b7280}
+.report .sig-cell{height:34px}
+/* ===== WARNINGS ===== */
+.warn-box{background:#fffbeb; border:1px solid #fcd34d; color:#92400e; border-radius:10px; padding:10px 14px; margin-bottom:12px; font-size:13px}
+.warn-box strong{display:block; margin-bottom:4px}
+.warn-box ul{margin:0; padding-left:18px}
+.ok-box{background:#ecfdf5; border:1px solid #a7f3d0; color:#065f46; border-radius:10px; padding:8px 14px; margin-bottom:12px; font-size:13px}
+/* ===== PRINT ===== */
+@media print{
+  @page{size:A4; margin:14mm}
+  body{background:#fff; font-size:11pt}
+  .no-print{display:none !important}
+  .app-header,.tabs,.toolbar,.tab-panel:not(#tab-report){display:none !important}
+  #tab-report{display:block !important; padding:0 !important; margin:0 !important}
+  main{padding:0; max-width:none}
+  .report{border:none; box-shadow:none; padding:0}
+  .report table{font-size:9pt}
+  thead{display:table-header-group}
+  tr{page-break-inside:avoid}
+  .report-section h3{page-break-after:avoid}
+  .page-break{page-break-before:always}
+}
+</style>
+</head>
+<body>
+
+<header class="app-header no-print">
+  <div class="brand">
+    <img id="headerLogo" class="logo-sm" alt="" style="display:none">
+    <div>
+      <h1>Church Appreciation Event Manager</h1>
+      <div class="sub" id="headerChurchName">Leaders • Staff • Infirm Members • Budget • PDF Report</div>
+    </div>
+  </div>
+  <div class="toolbar">
+    <button class="btn ghost" id="btnShare">Share Link</button>
+    <button class="btn ghost" id="btnSave">Save</button>
+    <button class="btn ghost" id="btnExport">Export Backup</button>
+    <button class="btn ghost" id="btnCsv">Export Excel</button>
+    <label class="btn ghost" style="display:inline-flex;align-items:center;cursor:pointer">
+      Import<input type="file" id="fileImport" accept="application/json" hidden>
+    </label>
+    <button class="btn ghost" id="btnReset">Reset</button>
+    <button class="btn solid" id="btnPrintTop">Print / PDF</button>
+  </div>
+</header>
+
+<nav class="tabs no-print">
+  <button class="tab active" data-tab="profile">Church Profile</button>
+  <button class="tab" data-tab="setup">Event Setup</button>
+  <button class="tab" data-tab="leaders">Leaders &amp; Staff</button>
+  <button class="tab" data-tab="infirm">Infirm Members</button>
+  <button class="tab" data-tab="groups">Groups &amp; Assignments</button>
+  <button class="tab" data-tab="budget">Budget</button>
+  <button class="tab" data-tab="report">Report</button>
+</nav>
+
+<main>
+  <!-- ============ CHURCH PROFILE ============ -->
+  <section class="tab-panel active" id="tab-profile">
+    <div class="card">
+      <h2>Church Logo</h2>
+      <div class="logo-row">
+        <div class="logo-box">
+          <img id="logoPreview" alt="Logo preview">
+          <span id="logoEmpty">No logo</span>
+        </div>
+        <div class="logo-controls">
+          <label class="btn blue" style="display:inline-flex;align-items:center;cursor:pointer">
+            Upload Logo<input type="file" id="logoFile" accept="image/*" hidden>
+          </label>
+          <button class="btn soft" id="btnRemoveLogo" type="button">Remove Logo</button>
+          <p class="hint">PNG or JPG. The image is resized automatically and stored in this browser. It appears on the report and PDF.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Church Identity</h2>
+      <div class="form-grid">
+        <label class="fld">Church Name
+          <input data-meta="churchName" placeholder="e.g. Grace Chapel">
+        </label>
+        <label class="fld">Motto / Theme
+          <input data-meta="motto" placeholder="e.g. Serving with Love">
+        </label>
+        <label class="fld">Address
+          <input data-meta="address" placeholder="P.O. Box / Street / Town">
+        </label>
+        <label class="fld">Phone
+          <input data-meta="phone" placeholder="+233 ...">
+        </label>
+        <label class="fld">Email
+          <input data-meta="email" placeholder="church@email.com">
+        </label>
+      </div>
+      <p class="hint">These details are printed in the header of the report.</p>
+    </div>
+  </section>
+
+  <!-- ============ SETUP ============ -->
+  <section class="tab-panel" id="tab-setup">
+    <div class="card">
+      <h2>Event Details</h2>
+      <div class="form-grid">
+        <label class="fld">Event Title
+          <input data-meta="eventTitle" placeholder="Church Appreciation Party">
+        </label>
+        <label class="fld">Event Date
+          <input type="date" data-meta="eventDate">
+        </label>
+        <label class="fld">Venue
+          <input data-meta="venue" placeholder="Church Auditorium">
+        </label>
+        <label class="fld">Prepared By
+          <input data-meta="preparedBy" placeholder="Name / Committee">
+        </label>
+        <label class="fld">Date Prepared
+          <input type="date" data-meta="datePrepared">
+        </label>
+        <label class="fld">Currency
+          <select data-meta="currency">
+            <option value="GHS">GHS — Ghana Cedi (GH₵)</option>
+            <option value="NGN">NGN — Naira (₦)</option>
+            <option value="USD">USD — Dollar ($)</option>
+            <option value="GBP">GBP — Pound (£)</option>
+            <option value="EUR">EUR — Euro (€)</option>
+            <option value="KES">KES — Kenya Shilling (KSh)</option>
+            <option value="ZAR">ZAR — Rand (R)</option>
+          </select>
+        </label>
+        <label class="fld">Contingency (%)
+          <input type="number" min="0" max="50" step="1" data-meta="contingencyPct">
+        </label>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Attendance &amp; Catering</h2>
+      <p class="hint" style="margin:0 0 10px">Click “Add Group”, name it, enter the number of members in that group, then add each item with its <strong>cost per head</strong>. Each item’s total = cost per head × the group’s members.</p>
+      <div class="row-actions">
+        <button class="btn blue" id="btnAddCatGroup" type="button">+ Add Group</button>
+      </div>
+      <div id="catering-container"></div>
+      <div class="summary" id="summary-catering"></div>
+    </div>
+  </section>
+
+  <!-- ============ LEADERS ============ -->
+  <section class="tab-panel" id="tab-leaders">
+    <div class="card">
+      <h2>Church Leaders &amp; Staff to Be Appreciated</h2>
+      <div class="row-actions">
+        <button class="btn blue" data-add="leaders">+ Add Person</button>
+      </div>
+      <div class="table-wrap">
+        <table class="data" data-table="leaders">
+          <thead>
+            <tr>
+              <th>S/N</th><th>Name</th><th>Role / Position</th><th>Category</th>
+              <th>Gift / Appreciation Item</th><th class="num">Qty</th>
+              <th class="num">Unit Cost</th><th class="num">Total</th><th>Remarks</th><th class="no-print"></th>
+            </tr>
+          </thead>
+          <tbody id="tbody-leaders"></tbody>
+        </table>
+      </div>
+      <div class="summary" id="summary-leaders"></div>
+    </div>
+  </section>
+
+  <!-- ============ INFIRM ============ -->
+  <section class="tab-panel" id="tab-infirm">
+    <div class="card">
+      <h2>Infirm Members Support List</h2>
+      <p class="hint">Confidential. Records both items and cash gifts with a signature column for accountability.</p>
+      <div class="row-actions">
+        <button class="btn blue" data-add="infirm">+ Add Infirm Member</button>
+      </div>
+      <div class="table-wrap">
+        <table class="data" data-table="infirm">
+          <thead>
+            <tr>
+              <th>S/N</th><th>Name</th><th>Item to Give</th><th class="num">Qty</th>
+              <th class="num">Unit Cost</th><th class="num">Item Total</th>
+              <th class="num">Cash Gift</th><th>Delivery Method</th>
+              <th>Received By / Signature</th><th>Remarks</th><th class="no-print"></th>
+            </tr>
+          </thead>
+          <tbody id="tbody-infirm"></tbody>
+        </table>
+      </div>
+      <div class="summary" id="summary-infirm"></div>
+    </div>
+  </section>
+
+  <!-- ============ GROUPS ============ -->
+  <section class="tab-panel" id="tab-groups">
+    <div class="card">
+      <h2>Group / Organization Assignment Schedule</h2>
+      <p class="hint">Record which group is purchasing or bringing which item. Items bought with a group’s own funds count as in-kind contributions.</p>
+      <div class="row-actions">
+        <button class="btn blue" data-add="groups">+ Add Group Assignment</button>
+      </div>
+      <div class="table-wrap">
+        <table class="data" data-table="groups">
+          <thead>
+            <tr>
+              <th>S/N</th><th>Group / Organization</th><th>Contact Person</th>
+              <th>Assigned Item / Purpose</th><th class="num">Qty</th>
+              <th class="num">Est. Value</th><th>Funding Source</th>
+              <th>Delivery Date</th><th>Status</th><th class="no-print"></th>
+            </tr>
+          </thead>
+          <tbody id="tbody-groups"></tbody>
+        </table>
+      </div>
+      <div class="summary" id="summary-groups"></div>
+    </div>
+  </section>
+
+  <!-- ============ BUDGET ============ -->
+  <section class="tab-panel" id="tab-budget">
+    <div class="card">
+      <h2>Itemized Budget</h2>
+      <div class="row-actions">
+        <button class="btn blue" data-add="budget">+ Add Budget Line</button>
+        <button class="btn soft" id="btnAutoFill">Auto-fill Standard Lines</button>
+      </div>
+      <p class="hint">Enter the full cost of each item. In “In-Kind / Pledged Value”, enter the portion covered by a group or donation. Cash Required is calculated automatically.</p>
+      <div class="table-wrap">
+        <table class="data" data-table="budget">
+          <thead>
+            <tr>
+              <th>S/N</th><th>Category</th><th>Item</th><th class="num">Qty</th>
+              <th class="num">Unit Cost</th><th class="num">Total Cost</th>
+              <th>Assigned Group / Source</th><th class="num">In-Kind / Pledged</th>
+              <th class="num">Cash Required</th><th class="no-print"></th>
+            </tr>
+          </thead>
+          <tbody id="tbody-budget"></tbody>
+        </table>
+      </div>
+      <div class="summary" id="summary-budget"></div>
+    </div>
+  </section>
+
+  <!-- ============ REPORT ============ -->
+  <section class="tab-panel" id="tab-report">
+    <div class="row-actions no-print">
+      <button class="btn blue" id="btnPrint">Print / Save as PDF</button>
+      <button class="btn soft" id="btnShare2">Copy Share Link</button>
+      <button class="btn soft" id="btnCsv2">Download Excel (CSV)</button>
+      <span class="hint" style="align-self:center">In the print dialog, choose “Save as PDF” or your printer.</span>
+    </div>
+    <div id="warnings" class="no-print"></div>
+    <div class="report" id="report-content"></div>
+  </section>
+</main>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* ============================================================
+   CHURCH APPRECIATION EVENT MANAGER — single-file app
+   ============================================================ */
+const STORAGE_KEY = 'churchAppreciationManager_v1';
+
+const CURRENCIES = {GHS:'GH₵',NGN:'₦',USD:'$',GBP:'£',EUR:'€',KES:'KSh',ZAR:'R'};
+
+const DEFAULT_STATE = {
+  meta:{
+    churchName:'', motto:'', address:'', phone:'', email:'', logo:'',
+    eventTitle:'Church Appreciation Party for Church Leaders, Staff and Infirm Members',
+    eventDate:'', venue:'', preparedBy:'', datePrepared:new Date().toISOString().slice(0,10),
+    currency:'GHS', contingencyPct:10
+  },
+  settings:{ membersAttending:0, costPerHead:0 },
+  catering:[],
+  leaders:[], infirm:[], groups:[], budget:[]
+};
+
+let state = normalizeState(loadRaw());
+
+/* ---------- helpers ---------- */
+function uid(){ return Date.now().toString(36) + Math.random().toString(36).slice(2,7); }
+function num(v){ const n = parseFloat(v); return isNaN(n) ? 0 : n; }
+function fmt(n){ return Number(n||0).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2}); }
+function esc(s){ return String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function sym(){ return CURRENCIES[state.meta.currency] || state.meta.currency || ''; }
+function M(n){ return sym() + ' ' + fmt(n); }
+function clone(o){ return JSON.parse(JSON.stringify(o)); }
+function normalizeState(p){
+  p = p || {};
+  return {
+    meta:{...DEFAULT_STATE.meta, ...(p.meta||{})},
+    settings:{...DEFAULT_STATE.settings, ...(p.settings||{})},
+    catering:normalizeCatering(p), cateringV:2,
+    leaders:Array.isArray(p.leaders)?p.leaders:[],
+    infirm:Array.isArray(p.infirm)?p.infirm:[],
+    groups:Array.isArray(p.groups)?p.groups:[],
+    budget:Array.isArray(p.budget)?p.budget:[]
+  };
+}
+
+/* Catering groups: [{id,name,items:[{id,name,cost}]}]. Older data (members x cost per head) becomes one group. */
+function normalizeCatering(p){
+  if(Array.isArray(p.catering)){
+    const legacy = p.cateringV !== 2;   // earlier version stored item cost as a group total
+    return p.catering.map(g=>{
+      const m = num(g.members);
+      return {id:g.id||uid(), name:g.name||'', members:m,
+        items:(Array.isArray(g.items)?g.items:[]).map(i=>({id:i.id||uid(), name:i.name||'',
+          cost: legacy && m>0 ? num(i.cost)/m : num(i.cost)}))};
+    });
+  }
+  const st = p.settings || {};
+  if(num(st.costPerHead) > 0) return [{id:uid(), name:'Catering', members:num(st.membersAttending), items:[{id:uid(), name:'Catering (per head)', cost:num(st.costPerHead)}]}];
+  return [];
+}
+
+/* ---------- base64url for share links ---------- */
+function b64urlEncode(str){
+  return btoa(unescape(encodeURIComponent(str)))
+    .replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
+}
+function b64urlDecode(b64){
+  b64 = b64.replace(/-/g,'+').replace(/_/g,'/');
+  while(b64.length % 4) b64 += '=';
+  return decodeURIComponent(escape(atob(b64)));
+}
+
+/* ---------- storage ---------- */
+function loadRaw(){
+  try{
+    const raw = localStorage.getItem(STORAGE_KEY);
+    return raw ? JSON.parse(raw) : null;
+  }catch(e){ return null; }
+}
+let saveTimer=null;
+function save(){ try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }catch(e){ console.warn('Save failed',e); } }
+function debouncedSave(){ clearTimeout(saveTimer); saveTimer=setTimeout(save, 400); }
+function toast(msg, ms=2200){
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  clearTimeout(toast._t); toast._t = setTimeout(()=>t.classList.remove('show'), ms);
+}
+
+/* ---------- share link ---------- */
+function makeShareLink(){
+  const b64 = b64urlEncode(JSON.stringify(state));
+  const base = location.href.split('#')[0];
+  return base + '#data=' + b64;
+}
+function fallbackCopy(text){
+  const ta = document.createElement('textarea');
+  ta.value = text; ta.setAttribute('readonly','');
+  ta.style.position='fixed'; ta.style.top='-1000px'; ta.style.opacity='0';
+  document.body.appendChild(ta); ta.select();
+  try{ document.execCommand('copy'); }catch(e){}
+  ta.remove();
+}
+async function copyShareLink(){
+  const link = makeShareLink();
+  let copied = false;
+  try{
+    if(navigator.clipboard && window.isSecureContext){
+      await navigator.clipboard.writeText(link); copied = true;
+    } else {
+      fallbackCopy(link); copied = true;
+    }
+  }catch(e){ copied = false; }
+  if(!copied){ prompt('Copy this share link:', link); }
+  else { toast('Share link copied to clipboard'); }
+
+  if(location.protocol === 'file:'){
+    setTimeout(()=>{
+      alert(
+        'Link copied.\n\nIMPORTANT:\nYou opened this app directly from a file (file://). '+
+        'That link will only work on this device.\n\nTo let others open it on their phones, '+
+        'upload the HTML file once to a free host (GitHub Pages, Netlify Drop, Cloudflare Pages), '+
+        'open the app from that web address, then click “Copy Share Link” again.'
+      );
+    }, 300);
+  } else if(link.length > 30000){
+    setTimeout(()=>toast('Heads-up: the link is large because it includes the logo.', 3500), 500);
+  }
+}
+function tryLoadShared(){
+  const h = location.hash || '';
+  if(!h.startsWith('#data=')) return false;
+  try{
+    const json = b64urlDecode(h.slice(6));
+    const incoming = normalizeState(JSON.parse(json));
+    const hasLocal = !!localStorage.getItem(STORAGE_KEY);
+    if(hasLocal){
+      const ok = confirm(
+        'A shared report link was opened.\n\nLoad the shared data? '+
+        'This will replace the data currently saved in this browser.\n\n'+
+        'Click Cancel to keep your own data.'
+      );
+      if(!ok){ history.replaceState(null,'',location.pathname+location.search); return false; }
+    }
+    state = incoming; save();
+    history.replaceState(null,'',location.pathname+location.search);
+    return true;
+  }catch(e){ console.warn('Bad share link', e); return false; }
+}
+
+/* ---------- computations ---------- */
+function computeLeaders(){
+  let count = state.leaders.length, total = 0;
+  state.leaders.forEach(l => total += num(l.qty)*num(l.unitCost));
+  return {count, total};
+}
+function computeInfirm(){
+  let count = state.infirm.length, items = 0, cash = 0;
+  state.infirm.forEach(m => { items += num(m.qty)*num(m.unitCost); cash += num(m.cashGift); });
+  return {count, items, cash, total: items + cash};
+}
+function computeGroups(){
+  let total=0, inKind=0, cashPledged=0, confirmed=0, pending=0;
+  state.groups.forEach(g=>{
+    const v = num(g.estValue); total += v;
+    if(g.fundingSource === "Group's own funds" || g.fundingSource === 'In-kind donation') inKind += v;
+    if(g.fundingSource === 'Cash donation to church') cashPledged += v;
+    if(g.status === 'Confirmed' || g.status === 'Received') confirmed += v; else pending += v;
+  });
+  return {total, inKind, cashPledged, confirmed, pending, count: state.groups.length};
+}
+function cateringPerHead(g){ return (g.items||[]).reduce((t,i)=>t+num(i.cost),0); }
+function cateringGroupTotal(g){ return cateringPerHead(g) * num(g.members); }
+function cateringMembers(){ return state.catering.reduce((t,g)=>t+num(g.members),0); }
+function cateringTotal(){ return state.catering.reduce((t,g)=>t+cateringGroupTotal(g),0); }
+function computeBudget(){
+  let subtotal=0, inKind=0;
+  state.budget.forEach(b=>{ subtotal += num(b.qty)*num(b.unitCost); inKind += num(b.inKind); });
+  const pct = num(state.meta.contingencyPct);
+  const contingency = subtotal * pct / 100;
+  const grand = subtotal + contingency;
+  const net = Math.max(0, grand - inKind);
+  return {subtotal, inKind, contingency, grand, net, pct};
+}
+
+/* ---------- rendering: setup inputs ---------- */
+function syncSetupInputs(){
+  document.querySelectorAll('[data-meta]').forEach(el=>{
+    el.value = state.meta[el.dataset.meta] ?? '';
+  });
+  document.querySelectorAll('[data-setting]').forEach(el=>{
+    el.value = state.settings[el.dataset.setting] ?? 0;
+  });
+}
+function renderLogo(){
+  const logo = state.meta.logo;
+  const hl = document.getElementById('headerLogo');
+  const prev = document.getElementById('logoPreview');
+  const empty = document.getElementById('logoEmpty');
+  if(logo){
+    hl.src = logo; hl.style.display='block';
+    prev.src = logo; prev.style.display='block'; empty.style.display='none';
+  } else {
+    hl.style.display='none'; hl.removeAttribute('src');
+    prev.style.display='none'; prev.removeAttribute('src'); empty.style.display='inline';
+  }
+  const hn = document.getElementById('headerChurchName');
+  hn.textContent = state.meta.churchName ||
+    'Leaders • Staff • Infirm Members • Budget • PDF Report';
+}
+
+/* ---------- rendering: tables ---------- */
+function inputTd(table,id,field,value,type='text',extra=''){
+  return `<td><input type="${type}" data-field="${field}" value="${esc(value)}" ${extra}></td>`;
+}
+function numTd(table,id,field,value,step='0.01'){
+  return `<td><input type="number" min="0" step="${step}" data-field="${field}" value="${num(value)}"></td>`;
+}
+
+function renderLeaders(){
+  const tb = document.getElementById('tbody-leaders');
+  if(!state.leaders.length){ tb.innerHTML = `<tr><td colspan="10" class="empty">No leaders or staff added yet. Click “Add Person”.</td></tr>`; }
+  else {
+    tb.innerHTML = state.leaders.map((l,i)=>`
+      <tr data-id="${l.id}">
+        <td class="sn">${i+1}</td>
+        ${inputTd('leaders',l.id,'name',l.name,'text','placeholder="Full name"')}
+        ${inputTd('leaders',l.id,'role',l.role,'text','placeholder="Role"')}
+        <td>
+          <select data-field="category">
+            ${['Clergy','Leader','Staff'].map(c=>`<option ${l.category===c?'selected':''}>${c}</option>`).join('')}
+          </select>
+        </td>
+        ${inputTd('leaders',l.id,'giftItem',l.giftItem,'text','placeholder="Gift item"')}
+        ${numTd('leaders',l.id,'qty',l.qty??1,'1')}
+        ${numTd('leaders',l.id,'unitCost',l.unitCost)}
+        <td class="computed" data-computed="total">${M(num(l.qty)*num(l.unitCost))}</td>
+        ${inputTd('leaders',l.id,'remarks',l.remarks,'text','placeholder="—"')}
+        <td class="no-print"><button class="del" data-del="${l.id}" data-table="leaders">✕</button></td>
+      </tr>`).join('');
+  }
+  renderSummaryLeaders();
+}
+function renderInfirm(){
+  const tb = document.getElementById('tbody-infirm');
+  if(!state.infirm.length){ tb.innerHTML = `<tr><td colspan="11" class="empty">No infirm members added yet. Click “Add Infirm Member”.</td></tr>`; }
+  else {
+    tb.innerHTML = state.infirm.map((m,i)=>`
+      <tr data-id="${m.id}">
+        <td class="sn">${i+1}</td>
+        ${inputTd('infirm',m.id,'name',m.name,'text','placeholder="Full name"')}
+        ${inputTd('infirm',m.id,'item',m.item,'text','placeholder="Food pack, blanket…"')}
+        ${numTd('infirm',m.id,'qty',m.qty??1,'1')}
+        ${numTd('infirm',m.id,'unitCost',m.unitCost)}
+        <td class="computed" data-computed="itemTotal">${M(num(m.qty)*num(m.unitCost))}</td>
+        ${numTd('infirm',m.id,'cashGift',m.cashGift)}
+        ${inputTd('infirm',m.id,'delivery',m.delivery,'text','placeholder="Hand delivery / Home visit"')}
+        ${inputTd('infirm',m.id,'receivedBy',m.receivedBy,'text','placeholder="Signature"')}
+        ${inputTd('infirm',m.id,'remarks',m.remarks,'text','placeholder="—"')}
+        <td class="no-print"><button class="del" data-del="${m.id}" data-table="infirm">✕</button></td>
+      </tr>`).join('');
+  }
+  renderSummaryInfirm();
+}
+function renderGroups(){
+  const tb = document.getElementById('tbody-groups');
+  const sources = ["Group's own funds",'In-kind donation','Cash donation to church','Church reimbursement','Joint'];
+  const statuses = ['Pledged','Confirmed','Received','Not yet confirmed'];
+  if(!state.groups.length){ tb.innerHTML = `<tr><td colspan="10" class="empty">No group assignments yet. Click “Add Group Assignment”.</td></tr>`; }
+  else {
+    tb.innerHTML = state.groups.map((g,i)=>`
+      <tr data-id="${g.id}">
+        <td class="sn">${i+1}</td>
+        ${inputTd('groups',g.id,'group',g.group,'text','placeholder="Group name"')}
+        ${inputTd('groups',g.id,'contact',g.contact,'text','placeholder="Contact"')}
+        ${inputTd('groups',g.id,'item',g.item,'text','placeholder="Item to purchase"')}
+        ${numTd('groups',g.id,'qty',g.qty??1,'1')}
+        ${numTd('groups',g.id,'estValue',g.estValue)}
+        <td><select data-field="fundingSource">${sources.map(s=>`<option ${g.fundingSource===s?'selected':''}>${s}</option>`).join('')}</select></td>
+        <td><input type="date" data-field="deliveryDate" value="${esc(g.deliveryDate||'')}"></td>
+        <td><select data-field="status">${statuses.map(s=>`<option ${g.status===s?'selected':''}>${s}</option>`).join('')}</select></td>
+        <td class="no-print"><button class="del" data-del="${g.id}" data-table="groups">✕</button></td>
+      </tr>`).join('');
+  }
+  renderSummaryGroups();
+}
+function renderCatering(){
+  const box = document.getElementById('catering-container');
+  if(!state.catering.length){
+    box.innerHTML = `<div class="empty">No catering groups yet. Click “Add Group”.</div>`;
+  } else {
+    box.innerHTML = state.catering.map(g=>`
+      <div class="group-card" data-cid="${g.id}">
+        <div class="group-head">
+          <input data-cfield="gname" value="${esc(g.name)}" placeholder="Group name (e.g. Food)">
+          <input type="number" min="0" step="1" data-cfield="members" value="${g.members?num(g.members):''}" placeholder="No. of members" title="Number of members in this group">
+          <span class="gtotal" data-gtotal>${M(cateringGroupTotal(g))}</span>
+          <button class="del" data-cdelgroup="${g.id}" title="Delete group">✕</button>
+        </div>
+        <div class="group-body">
+          ${(g.items||[]).map((it,ii)=>`
+            <div class="item-row" data-iid="${it.id}">
+              <span class="sn">${ii+1}</span>
+              <input data-cfield="name" list="item-list" value="${esc(it.name)}" placeholder="Item name">
+              <input type="number" min="0" step="0.01" data-cfield="cost" value="${it.cost?num(it.cost):''}" placeholder="Cost / head">
+              <span class="itotal" data-itotal>${M(num(it.cost)*num(g.members))}</span>
+              <button class="del" data-cdelitem="${it.id}" data-cid="${g.id}">✕</button>
+            </div>`).join('')}
+          <button class="btn soft" data-caddite="${g.id}" type="button">+ Add Item</button>
+        </div>
+      </div>`).join('');
+  }
+  renderSummaryCatering();
+}
+function addCateringGroup(){
+  const g = {id:uid(), name:'', members:0, items:[{id:uid(), name:'', cost:0}]};
+  state.catering.push(g);
+  renderCatering(); renderReport(); save();
+  const inp = document.querySelector(`.group-card[data-cid="${g.id}"] input[data-cfield="gname"]`);
+  if(inp) inp.focus();
+}
+function addCateringItem(cid){
+  const g = state.catering.find(x=>x.id===cid); if(!g) return;
+  const it = {id:uid(), name:'', cost:0};
+  g.items.push(it);
+  renderCatering(); renderReport(); save();
+  const inp = document.querySelector(`.item-row[data-iid="${it.id}"] input[data-cfield="name"]`);
+  if(inp) inp.focus();
+}
+function deleteCateringGroup(cid){
+  if(!confirm('Delete this group and all its items?')) return;
+  state.catering = state.catering.filter(x=>x.id!==cid);
+  renderCatering(); renderReport(); save(); toast('Group deleted');
+}
+function deleteCateringItem(cid,iid){
+  const g = state.catering.find(x=>x.id===cid); if(!g) return;
+  g.items = g.items.filter(i=>i.id!==iid);
+  renderCatering(); renderReport(); save();
+}
+function onCateringInput(el){
+  const card = el.closest('.group-card'); if(!card) return;
+  const g = state.catering.find(x=>x.id===card.dataset.cid); if(!g) return;
+  if(el.dataset.cfield === 'gname'){ g.name = el.value; }
+  else if(el.dataset.cfield === 'members'){ g.members = num(el.value); }
+  else {
+    const row = el.closest('.item-row'); if(!row) return;
+    const it = g.items.find(x=>x.id===row.dataset.iid); if(!it) return;
+    if(el.dataset.cfield === 'cost') it.cost = num(el.value); else it.name = el.value;
+  }
+  card.querySelector('[data-gtotal]').textContent = M(cateringGroupTotal(g));
+  card.querySelectorAll('.item-row').forEach(r=>{
+    const it = g.items.find(x=>x.id===r.dataset.iid);
+    if(it) r.querySelector('[data-itotal]').textContent = M(num(it.cost)*num(g.members));
+  });
+  renderSummaryCatering(); scheduleReport(); debouncedSave();
+}
+function renderBudget(){
+  const tb = document.getElementById('tbody-budget');
+  if(!state.budget.length){ tb.innerHTML = `<tr><td colspan="10" class="empty">No budget lines yet. Click “Add Budget Line” or “Auto-fill Standard Lines”.</td></tr>`; }
+  else {
+    tb.innerHTML = state.budget.map((b,i)=>{
+      const total = num(b.qty)*num(b.unitCost);
+      const cash = Math.max(0, total - num(b.inKind));
+      return `
+      <tr data-id="${b.id}">
+        <td class="sn">${i+1}</td>
+        <td><input list="cat-list" data-field="category" value="${esc(b.category||'')}" placeholder="Category"></td>
+        ${inputTd('budget',b.id,'item',b.item,'text','placeholder="Item"')}
+        ${numTd('budget',b.id,'qty',b.qty??1,'1')}
+        ${numTd('budget',b.id,'unitCost',b.unitCost)}
+        <td class="computed" data-computed="total">${M(total)}</td>
+        ${inputTd('budget',b.id,'assignedGroup',b.assignedGroup,'text','placeholder="Group / source"')}
+        ${numTd('budget',b.id,'inKind',b.inKind)}
+        <td class="computed" data-computed="cash">${M(cash)}</td>
+        <td class="no-print"><button class="del" data-del="${b.id}" data-table="budget">✕</button></td>
+      </tr>`;
+    }).join('');
+  }
+  renderSummaryBudget();
+}
+
+/* ---------- summaries ---------- */
+function stat(label,value,cls=''){
+  return `<div class="stat ${cls}"><div class="lbl">${label}</div><div class="val">${value}</div></div>`;
+}
+function renderSummaryLeaders(){
+  const c = computeLeaders();
+  document.getElementById('summary-leaders').innerHTML =
+    stat('People', c.count) + stat('Total Gifts Value', M(c.total),'green');
+}
+function renderSummaryInfirm(){
+  const c = computeInfirm();
+  document.getElementById('summary-infirm').innerHTML =
+    stat('Infirm Members', c.count) + stat('Items Total', M(c.items)) +
+    stat('Cash Gifts', M(c.cash)) + stat('Total Support', M(c.total),'green');
+}
+function renderSummaryGroups(){
+  const c = computeGroups();
+  document.getElementById('summary-groups').innerHTML =
+    stat('Groups', c.count) + stat('Total Pledged Value', M(c.total)) +
+    stat('In-Kind Value', M(c.inKind),'green') + stat('Cash Pledged', M(c.cashPledged),'green') +
+    stat('Confirmed', M(c.confirmed)) + stat('Pending', M(c.pending),'red');
+}
+function renderSummaryCatering(){
+  const n = state.catering.reduce((t,g)=>t+(g.items||[]).length,0);
+  document.getElementById('summary-catering').innerHTML =
+    stat('Groups', state.catering.length) + stat('Total Members', cateringMembers()) + stat('Items', n) + stat('Total Catering Cost', M(cateringTotal()),'green');
+}
+function renderSummaryBudget(){
+  const c = computeBudget();
+  document.getElementById('summary-budget').innerHTML =
+    stat('Subtotal', M(c.subtotal)) +
+    stat('Contingency ('+c.pct+'%)', M(c.contingency)) +
+    stat('Grand Total', M(c.grand)) +
+    stat('Less: In-Kind', M(c.inKind),'green') +
+    stat('Net Cash Required', M(c.net),'red');
+}
+
+/* ---------- REPORT (fully tabular) ---------- */
+function renderReport(){
+  const m = state.meta;
+  const le = computeLeaders();
+  const inf = computeInfirm();
+  const gr = computeGroups();
+  const bu = computeBudget();
+  const el = document.getElementById('report-content');
+
+  let h = '';
+
+  /* Header */
+  h += `<div class="report-head">`;
+  if(m.logo) h += `<img class="report-logo" src="${m.logo}" alt="Church logo">`;
+  h += `<div class="report-church">${esc(m.churchName||'Church Name')}</div>`;
+  if(m.motto) h += `<div class="report-motto">${esc(m.motto)}</div>`;
+  h += `<h1>${esc(m.eventTitle||'Church Appreciation Party')}</h1></div>`;
+
+  /* Meta info table */
+  h += `<table>
+    <tr><th style="width:20%">Event Date</th><td style="width:30%">${esc(m.eventDate||'—')}</td>
+        <th style="width:20%">Venue</th><td style="width:30%">${esc(m.venue||'—')}</td></tr>
+    <tr><th>Prepared By</th><td>${esc(m.preparedBy||'—')}</td>
+        <th>Date Prepared</th><td>${esc(m.datePrepared||'—')}</td></tr>
+    <tr><th>Address</th><td colspan="3">${esc(m.address||'—')}</td></tr>
+    <tr><th>Phone</th><td>${esc(m.phone||'—')}</td>
+        <th>Email</th><td>${esc(m.email||'—')}</td></tr>
+  </table>`;
+
+  /* 1. Financial Summary */
+  h += `<div class="report-section">
+    <h3>1. Financial Summary</h3>
+    <table>
+      <thead><tr><th>Item</th><th class="num" style="width:30%">Amount</th></tr></thead>
+      <tbody>
+        <tr><td>Total Gifts for Leaders &amp; Staff</td><td class="num">${M(le.total)}</td></tr>
+        <tr><td>Total Items for Infirm Members</td><td class="num">${M(inf.items)}</td></tr>
+        <tr><td>Total Cash Gifts for Infirm Members</td><td class="num">${M(inf.cash)}</td></tr>
+        <tr><td>Total Catering Cost</td><td class="num">${M(cateringTotal())}</td></tr>
+        <tr><td>Budget Subtotal</td><td class="num">${M(bu.subtotal)}</td></tr>
+        <tr><td>Contingency (${bu.pct}%)</td><td class="num">${M(bu.contingency)}</td></tr>
+        <tr><td><strong>Grand Total Event Cost</strong></td><td class="num"><strong>${M(bu.grand)}</strong></td></tr>
+        <tr><td>Less: In-Kind / Pledged Contributions</td><td class="num">${M(bu.inKind)}</td></tr>
+        <tr class="grand"><td>Net Cash Required from the Church</td><td class="num">${M(bu.net)}</td></tr>
+      </tbody>
+    </table>
+  </div>`;
+
+  /* 2. Assumptions */
+  const catering = cateringTotal();
+  h += `<div class="report-section">
+    <h3>2. Assumptions</h3>
+    <table>
+      <thead><tr><th>Parameter</th><th class="num" style="width:30%">Value</th></tr></thead>
+      <tbody>
+        <tr><td>Church members attending (all groups)</td><td class="num">${cateringMembers()}</td></tr>
+        <tr><td>Catering estimate</td><td class="num">${M(catering)}</td></tr>
+        <tr><td>Contingency rate</td><td class="num">${bu.pct}%</td></tr>
+        <tr><td>Currency</td><td class="num">${esc(state.meta.currency)}</td></tr>
+      </tbody>
+    </table>
+  </div>`;
+
+  /* Catering groups */
+  h += `<div class="report-section">
+    <h3>Catering Breakdown</h3>`;
+  if(state.catering.length){
+    h += `<table><thead><tr><th style="width:40px">S/N</th><th>Group</th><th>Item</th>
+      <th class="num" style="width:18%">Cost / Head</th><th class="num" style="width:20%">Total</th></tr></thead><tbody>`;
+    state.catering.forEach((g,i)=>{
+      const items = g.items && g.items.length ? g.items : [{name:'—',cost:0}];
+      items.forEach((it,k)=>{
+        h += `<tr>${k===0?`<td rowspan="${items.length}">${i+1}</td><td rowspan="${items.length}"><strong>${esc(g.name||'Unnamed group')}</strong><br><span class="small">${num(g.members)} member(s)</span></td>`:''}
+          <td>${esc(it.name)}</td><td class="num">${M(num(it.cost))}</td><td class="num">${M(num(it.cost)*num(g.members))}</td></tr>`;
+      });
+      h += `<tr><td colspan="3" class="num"><em>${esc(g.name||'Group')} subtotal (${M(cateringPerHead(g))} × ${num(g.members)})</em></td><td class="num">${M(cateringPerHead(g))}</td><td class="num"><strong>${M(cateringGroupTotal(g))}</strong></td></tr>`;
+    });
+    h += `</tbody><tfoot><tr><th colspan="4" class="num">Total Catering</th><th class="num">${M(cateringTotal())}</th></tr></tfoot></table>`;
+  } else h += `<table><tr><td class="small">No catering items recorded.</td></tr></table>`;
+  h += `</div>`;
+
+  /* A. Leaders */
+  h += `<div class="report-section page-break">
+    <h3>A. Church Leaders &amp; Staff to Be Appreciated</h3>`;
+  if(state.leaders.length){
+    h += `<table>
+      <thead><tr><th>S/N</th><th>Name</th><th>Role</th><th>Category</th><th>Gift Item</th>
+      <th class="num">Qty</th><th class="num">Unit Cost</th><th class="num">Total</th></tr></thead><tbody>`;
+    state.leaders.forEach((l,i)=>{
+      h += `<tr><td>${i+1}</td><td>${esc(l.name)}</td><td>${esc(l.role)}</td><td>${esc(l.category)}</td>
+        <td>${esc(l.giftItem)}</td><td class="num">${num(l.qty)}</td>
+        <td class="num">${M(num(l.unitCost))}</td><td class="num">${M(num(l.qty)*num(l.unitCost))}</td></tr>`;
+    });
+    h += `</tbody><tfoot><tr><th colspan="7" class="num">Subtotal</th><th class="num">${M(le.total)}</th></tr></tfoot></table>`;
+  } else h += `<table><tr><td class="small">No leaders or staff listed.</td></tr></table>`;
+  h += `</div>`;
+
+  /* B. Infirm */
+  h += `<div class="report-section">
+    <h3>B. Infirm Members Support List <span class="small">(Confidential)</span></h3>`;
+  if(state.infirm.length){
+    h += `<table>
+      <thead><tr><th>S/N</th><th>Name</th><th>Item</th><th class="num">Qty</th>
+      <th class="num">Item Total</th><th class="num">Cash Gift</th><th>Delivery</th>
+      <th>Received / Signature</th></tr></thead><tbody>`;
+    state.infirm.forEach((x,i)=>{
+      h += `<tr><td>${i+1}</td><td>${esc(x.name)}</td><td>${esc(x.item)}</td>
+        <td class="num">${num(x.qty)}</td><td class="num">${M(num(x.qty)*num(x.unitCost))}</td>
+        <td class="num">${M(num(x.cashGift))}</td><td>${esc(x.delivery)}</td>
+        <td>${esc(x.receivedBy)}</td></tr>`;
+    });
+    h += `</tbody><tfoot><tr><th colspan="4" class="num">Totals</th>
+      <th class="num">${M(inf.items)}</th><th class="num">${M(inf.cash)}</th>
+      <th colspan="2"></th></tr></tfoot></table>`;
+  } else h += `<table><tr><td class="small">No infirm members listed.</td></tr></table>`;
+  h += `</div>`;
+
+  /* C. Groups */
+  h += `<div class="report-section">
+    <h3>C. Group / Organization Assignment Schedule</h3>`;
+  if(state.groups.length){
+    h += `<table>
+      <thead><tr><th>S/N</th><th>Group</th><th>Contact</th><th>Assigned Item</th>
+      <th class="num">Qty</th><th class="num">Est. Value</th><th>Funding Source</th>
+      <th>Delivery</th><th>Status</th></tr></thead><tbody>`;
+    state.groups.forEach((g,i)=>{
+      const badge = (g.status==='Confirmed'||g.status==='Received') ? 'ok'
+                  : (g.status==='Not yet confirmed' ? 'no' : 'pend');
+      h += `<tr><td>${i+1}</td><td>${esc(g.group)}</td><td>${esc(g.contact)}</td>
+        <td>${esc(g.item)}</td><td class="num">${num(g.qty)}</td>
+        <td class="num">${M(num(g.estValue))}</td><td>${esc(g.fundingSource)}</td>
+        <td>${esc(g.deliveryDate||'—')}</td>
+        <td><span class="badge ${badge}">${esc(g.status)}</span></td></tr>`;
+    });
+    h += `</tbody><tfoot><tr><th colspan="5" class="num">Total Pledged</th>
+      <th class="num">${M(gr.total)}</th><th colspan="3"></th></tr></tfoot></table>
+      <table><tr>
+        <th>In-kind value</th><td class="num">${M(gr.inKind)}</td>
+        <th>Cash pledged</th><td class="num">${M(gr.cashPledged)}</td>
+        <th>Confirmed</th><td class="num">${M(gr.confirmed)}</td>
+        <th>Pending</th><td class="num">${M(gr.pending)}</td>
+      </tr></table>`;
+  } else h += `<table><tr><td class="small">No group assignments recorded.</td></tr></table>`;
+  h += `</div>`;
+
+  /* D. Budget */
+  h += `<div class="report-section page-break">
+    <h3>D. Itemized Budget</h3>`;
+  if(state.budget.length){
+    h += `<table>
+      <thead><tr><th>S/N</th><th>Category</th><th>Item</th><th class="num">Qty</th>
+      <th class="num">Unit Cost</th><th class="num">Total</th><th>Assigned Group</th>
+      <th class="num">In-Kind</th><th class="num">Cash</th></tr></thead><tbody>`;
+    state.budget.forEach((b,i)=>{
+      const total = num(b.qty)*num(b.unitCost);
+      const cash = Math.max(0, total - num(b.inKind));
+      h += `<tr><td>${i+1}</td><td>${esc(b.category)}</td><td>${esc(b.item)}</td>
+        <td class="num">${num(b.qty)}</td><td class="num">${M(num(b.unitCost))}</td>
+        <td class="num">${M(total)}</td><td>${esc(b.assignedGroup)}</td>
+        <td class="num">${M(num(b.inKind))}</td><td class="num">${M(cash)}</td></tr>`;
+    });
+    h += `</tbody><tfoot>
+      <tr><th colspan="5" class="num">Subtotal</th><th class="num">${M(bu.subtotal)}</th><th colspan="3"></th></tr>
+      <tr><th colspan="5" class="num">Contingency (${bu.pct}%)</th><th class="num">${M(bu.contingency)}</th><th colspan="3"></th></tr>
+      <tr><th colspan="5" class="num">Grand Total</th><th class="num">${M(bu.grand)}</th><th colspan="3"></th></tr>
+      <tr><th colspan="7" class="num">Less: In-Kind / Pledged</th><th class="num">${M(bu.inKind)}</th><th></th></tr>
+      <tr><th colspan="7" class="num">Net Cash Required</th><th></th><th class="num">${M(bu.net)}</th></tr>
+    </tfoot></table>`;
+  } else h += `<table><tr><td class="small">No budget lines recorded.</td></tr></table>`;
+  h += `</div>`;
+
+  /* E. Approval — tabular */
+  h += `<div class="report-section">
+    <h3>E. Approval</h3>
+    <table>
+      <thead><tr><th>Role</th><th>Name</th><th>Signature</th><th>Date</th></tr></thead>
+      <tbody>
+        <tr><td>Prepared by</td><td>${esc(m.preparedBy||'')}</td><td class="sig-cell"></td><td></td></tr>
+        <tr><td>Approved by</td><td></td><td class="sig-cell"></td><td></td></tr>
+        <tr><td>Treasurer</td><td></td><td class="sig-cell"></td><td></td></tr>
+      </tbody>
+    </table>
+  </div>`;
+
+  el.innerHTML = h;
+  renderWarnings();
+}
+
+/* ---------- report refresh (debounced while typing) ---------- */
+let reportTimer=null;
+function scheduleReport(){ clearTimeout(reportTimer); reportTimer=setTimeout(()=>{ reportTimer=null; renderReport(); }, 250); }
+function flushReport(){ clearTimeout(reportTimer); reportTimer=null; renderReport(); }
+window.addEventListener('beforeunload', ()=>{ try{ save(); }catch(e){} });
+
+/* ---------- 3: data checks ---------- */
+function collectWarnings(){
+  const w = [];
+  const m = state.meta;
+  if(!String(m.churchName||'').trim()) w.push('Church name is empty (Church Profile tab).');
+  if(!m.eventDate) w.push('Event date is not set (Event Setup tab).');
+  state.catering.forEach((g,i)=>{
+    const label = String(g.name||'').trim() ? `Catering group “${g.name}”` : `Catering group #${i+1}`;
+    if(!String(g.name||'').trim()) w.push(`${label} has no name.`);
+    if(num(g.members) < 0) w.push(`${label} has a negative number of members.`);
+    if(!num(g.members) && (g.items||[]).some(it=>num(it.cost)>0)) w.push(`${label} has costs but 0 members, so its total is 0.`);
+    (g.items||[]).forEach((it,k)=>{
+      const n = `${label}, item ${k+1}`;
+      if(num(it.cost) < 0) w.push(`${n} has a negative cost.`);
+      else if(num(it.cost) > 0 && !String(it.name||'').trim()) w.push(`${n} has a cost but no name.`);
+      else if(String(it.name||'').trim() && !num(it.cost)) w.push(`${n} (“${it.name}”) has no cost.`);
+    });
+  });
+  state.leaders.forEach((l,i)=>{
+    if(!String(l.name||'').trim()) w.push(`Leaders & Staff row ${i+1} has no name.`);
+    if(num(l.qty)<0 || num(l.unitCost)<0) w.push(`Leaders & Staff row ${i+1} has a negative value.`);
+  });
+  state.infirm.forEach((x,i)=>{
+    if(!String(x.name||'').trim()) w.push(`Infirm Members row ${i+1} has no name.`);
+    if(num(x.qty)<0 || num(x.unitCost)<0 || num(x.cashGift)<0) w.push(`Infirm Members row ${i+1} has a negative value.`);
+  });
+  state.budget.forEach((b,i)=>{
+    if(!String(b.item||'').trim() && (num(b.unitCost)>0)) w.push(`Budget line ${i+1} has a cost but no item name.`);
+    if(num(b.qty)<0 || num(b.unitCost)<0 || num(b.inKind)<0) w.push(`Budget line ${i+1} has a negative value.`);
+    if(num(b.inKind) > num(b.qty)*num(b.unitCost)) w.push(`Budget line ${i+1}: In-Kind is more than the line total.`);
+  });
+  return w;
+}
+function renderWarnings(){
+  const box = document.getElementById('warnings'); if(!box) return;
+  const w = collectWarnings();
+  if(!w.length){ box.innerHTML = `<div class="ok-box">✓ No problems found in your data.</div>`; return; }
+  box.innerHTML = `<div class="warn-box"><strong>Please check before printing (${w.length})</strong><ul>` +
+    w.slice(0,12).map(x=>`<li>${esc(x)}</li>`).join('') +
+    (w.length>12 ? `<li>…and ${w.length-12} more</li>` : '') + `</ul></div>`;
+}
+function guardedPrint(){
+  flushReport();
+  const w = collectWarnings();
+  if(w.length){
+    const list = w.slice(0,8).map(x=>'• '+x).join('\n') + (w.length>8 ? `\n…and ${w.length-8} more` : '');
+    if(!confirm('Some things may need attention:\n\n'+list+'\n\nPrint anyway?')) return;
+  }
+  window.print();
+}
+
+/* ---------- 2: Excel (CSV) export ---------- */
+function csvCell(v){
+  if(typeof v === 'number') return String(v);
+  v = String(v ?? '');
+  if(/^[=+\-@]/.test(v)) v = "'" + v;           // stop spreadsheet formula injection
+  return /[",\n\r]/.test(v) ? '"' + v.replace(/"/g,'""') + '"' : v;
+}
+function exportCsv(){
+  const m = state.meta, rows = [];
+  const R = (...c)=>rows.push(c.map(csvCell).join(','));
+  const bu = computeBudget(), le = computeLeaders(), inf = computeInfirm(), gr = computeGroups();
+  R(m.churchName||'Church'); R(m.eventTitle||''); R('Event date', m.eventDate||'', 'Venue', m.venue||''); R('Currency', m.currency); R();
+
+  R('CATERING BREAKDOWN'); R('Group','Members','Item','Cost per head','Item total');
+  state.catering.forEach(g=>{
+    (g.items||[]).forEach(it=>R(g.name, num(g.members), it.name, num(it.cost), num(it.cost)*num(g.members)));
+    R((g.name||'Group')+' subtotal','','', cateringPerHead(g), cateringGroupTotal(g));
+  });
+  R('Total catering','','','', cateringTotal()); R();
+
+  R('LEADERS & STAFF'); R('S/N','Name','Role','Category','Gift item','Qty','Unit cost','Total');
+  state.leaders.forEach((l,i)=>R(i+1,l.name,l.role,l.category,l.giftItem,num(l.qty),num(l.unitCost),num(l.qty)*num(l.unitCost)));
+  R('Total','','','','','','',le.total); R();
+
+  R('INFIRM MEMBERS'); R('S/N','Name','Item','Qty','Unit cost','Item total','Cash gift','Delivery','Received by');
+  state.infirm.forEach((x,i)=>R(i+1,x.name,x.item,num(x.qty),num(x.unitCost),num(x.qty)*num(x.unitCost),num(x.cashGift),x.delivery,x.receivedBy));
+  R('Totals','','','','',inf.items,inf.cash); R();
+
+  R('GROUP ASSIGNMENTS'); R('S/N','Group','Contact','Item','Qty','Est. value','Funding source','Delivery date','Status');
+  state.groups.forEach((g,i)=>R(i+1,g.group,g.contact,g.item,num(g.qty),num(g.estValue),g.fundingSource,g.deliveryDate||'',g.status));
+  R('Total pledged','','','','',gr.total); R();
+
+  R('ITEMIZED BUDGET'); R('S/N','Category','Item','Qty','Unit cost','Total cost','Assigned group','In-kind','Cash required');
+  state.budget.forEach((b,i)=>{ const t=num(b.qty)*num(b.unitCost); R(i+1,b.category,b.item,num(b.qty),num(b.unitCost),t,b.assignedGroup,num(b.inKind),Math.max(0,t-num(b.inKind))); });
+  R('Subtotal','','','','',bu.subtotal); R('Contingency ('+bu.pct+'%)','','','','',bu.contingency);
+  R('Grand total','','','','',bu.grand); R('Less: in-kind','','','','',bu.inKind); R('Net cash required','','','','',bu.net);
+
+  const blob = new Blob(['\ufeff'+rows.join('\r\n')], {type:'text/csv;charset=utf-8'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `church-appreciation-${m.eventDate || new Date().toISOString().slice(0,10)}.csv`;
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(()=>URL.revokeObjectURL(a.href), 1000);
+  toast('Excel file downloaded');
+}
+
+/* ---------- master render ---------- */
+function renderAll(){
+  syncSetupInputs();
+  renderLogo();
+  renderCatering(); renderLeaders(); renderInfirm(); renderGroups(); renderBudget();
+  renderReport();
+}
+
+/* ---------- field updates ---------- */
+const NUMERIC = ['qty','unitCost','cashGift','estValue','inKind'];
+function updateField(table, id, field, value){
+  const list = state[table]; if(!list) return;
+  const item = list.find(x => x.id === id); if(!item) return;
+  item[field] = NUMERIC.includes(field) ? num(value) : value;
+  updateRowComputed(table, id);
+  if(table==='leaders') renderSummaryLeaders();
+  if(table==='infirm') renderSummaryInfirm();
+  if(table==='groups') renderSummaryGroups();
+  if(table==='budget') renderSummaryBudget();
+  scheduleReport(); debouncedSave();
+}
+function updateRowComputed(table, id){
+  const item = state[table].find(x => x.id === id); if(!item) return;
+  const tr = document.querySelector(`table[data-table="${table}"] tr[data-id="${id}"]`);
+  if(!tr) return;
+  const set = (name, val)=>{ const td = tr.querySelector(`[data-computed="${name}"]`); if(td) td.textContent = val; };
+  if(table==='leaders') set('total', M(num(item.qty)*num(item.unitCost)));
+  if(table==='infirm') set('itemTotal', M(num(item.qty)*num(item.unitCost)));
+  if(table==='budget'){
+    const total = num(item.qty)*num(item.unitCost);
+    set('total', M(total));
+    set('cash', M(Math.max(0, total - num(item.inKind))));
+  }
+}
+
+/* ---------- row add/delete ---------- */
+function addRow(table){
+  const id = uid();
+  if(table==='leaders') state.leaders.push({id,name:'',role:'',category:'Leader',giftItem:'',qty:1,unitCost:0,remarks:''});
+  if(table==='infirm') state.infirm.push({id,name:'',item:'',qty:1,unitCost:0,cashGift:0,delivery:'',receivedBy:'',remarks:''});
+  if(table==='groups') state.groups.push({id,group:'',contact:'',item:'',qty:1,estValue:0,fundingSource:"Group's own funds",deliveryDate:'',status:'Pledged'});
+  if(table==='budget') state.budget.push({id,category:'',item:'',qty:1,unitCost:0,assignedGroup:'',inKind:0});
+  if(table==='leaders') renderLeaders();
+  if(table==='infirm') renderInfirm();
+  if(table==='groups') renderGroups();
+  if(table==='budget') renderBudget();
+  renderReport(); save();
+  const row = document.querySelector(`table[data-table="${table}"] tbody tr:last-child input, table[data-table="${table}"] tbody tr:last-child select`);
+  if(row) row.focus();
+  toast('Row added');
+}
+function deleteRow(table, id){
+  if(!confirm('Delete this row?')) return;
+  state[table] = state[table].filter(x => x.id !== id);
+  if(table==='leaders') renderLeaders();
+  if(table==='infirm') renderInfirm();
+  if(table==='groups') renderGroups();
+  if(table==='budget') renderBudget();
+  renderReport(); save(); toast('Row deleted');
+}
+
+/* ---------- auto-fill ---------- */
+function autoFillBudget(){
+  const le = computeLeaders();
+  const inf = computeInfirm();
+  const std = [
+    {category:"Leaders' Appreciation", item:'Gifts for church leaders & staff', qty:le.count, unitCost: le.count? le.total/le.count : 0, assignedGroup:'', inKind:0, auto:true},
+    {category:'Infirm Support', item:'Items for infirm members', qty:inf.count, unitCost: inf.count? inf.items/inf.count : 0, assignedGroup:'', inKind:0, auto:true},
+    {category:'Infirm Support', item:'Cash gifts to infirm members', qty:inf.count, unitCost: inf.count? inf.cash/inf.count : 0, assignedGroup:'', inKind:0, auto:true},
+    {category:'Food/Refreshments', item:'Catering (from Event Setup)', qty:1, unitCost:cateringTotal(), assignedGroup:'', inKind:0, auto:true},
+    {category:'Venue/Decorations', item:'Venue, chairs, canopy & decorations', qty:1, unitCost:0, assignedGroup:'', inKind:0},
+    {category:'Program Materials', item:'Printing, certificates & souvenirs', qty:1, unitCost:0, assignedGroup:'', inKind:0},
+    {category:'Sound/Music', item:'PA system, MC & choir', qty:1, unitCost:0, assignedGroup:'', inKind:0},
+    {category:'Logistics', item:'Transport, setup & cleaning', qty:1, unitCost:0, assignedGroup:'', inKind:0}
+  ];
+  let added = 0, updated = 0;
+  std.forEach(s=>{
+    const {auto, ...line} = s;
+    const existing = state.budget.find(b => b.item === s.item);
+    if(!existing){ state.budget.push({id:uid(), ...line}); added++; }
+    else if(auto && (num(existing.qty)!==num(line.qty) || num(existing.unitCost)!==num(line.unitCost))){
+      existing.qty = line.qty; existing.unitCost = line.unitCost; updated++;
+    }
+  });
+  renderBudget(); renderReport(); save();
+  toast(added||updated ? `${added} line(s) added, ${updated} refreshed` : 'Standard lines already up to date');
+}
+
+/* ---------- logo upload ---------- */
+function handleLogoFile(file){
+  if(!file) return;
+  if(!file.type.startsWith('image/')){ toast('Please choose an image file'); return; }
+  const reader = new FileReader();
+  reader.onload = e=>{
+    const img = new Image();
+    img.onload = ()=>{
+      const max = 420;
+      let w = img.width, h = img.height;
+      if(w > max || h > max){ const r = Math.min(max/w, max/h); w = Math.round(w*r); h = Math.round(h*r); }
+      const c = document.createElement('canvas'); c.width=w; c.height=h;
+      const ctx = c.getContext('2d');
+      ctx.fillStyle = '#ffffff'; ctx.fillRect(0,0,w,h);
+      ctx.drawImage(img,0,0,w,h);
+      let dataUrl = c.toDataURL('image/jpeg', 0.85);
+      // keep it small for localStorage / share links
+      if(dataUrl.length > 180000){ dataUrl = c.toDataURL('image/jpeg', 0.7); }
+      state.meta.logo = dataUrl;
+      save(); renderLogo(); renderReport(); toast('Logo uploaded');
+    };
+    img.onerror = ()=>toast('Could not read that image');
+    img.src = e.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+
+/* ---------- tabs ---------- */
+document.querySelectorAll('.tab').forEach(t=>{
+  t.addEventListener('click', ()=>{
+    document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
+    document.querySelectorAll('.tab-panel').forEach(x=>x.classList.remove('active'));
+    t.classList.add('active');
+    document.getElementById('tab-'+t.dataset.tab).classList.add('active');
+    if(t.dataset.tab==='report') flushReport();
+    window.scrollTo({top:0, behavior:'smooth'});
+  });
+});
+
+/* ---------- global event delegation ---------- */
+document.addEventListener('input', e=>{
+  const el = e.target;
+  if(el.dataset.cfield){ onCateringInput(el); return; }
+  if(el.dataset.meta){
+    state.meta[el.dataset.meta] = el.value;
+    if(el.dataset.meta === 'churchName') renderLogo();
+    scheduleReport(); debouncedSave(); return;
+  }
+  if(el.dataset.setting){
+    state.settings[el.dataset.setting] = num(el.value);
+    scheduleReport(); debouncedSave(); return;
+  }
+  if(el.dataset.field && el.closest('tr') && el.closest('table') && el.closest('table').dataset.table){
+    const table = el.closest('table').dataset.table;
+    const id = el.closest('tr').dataset.id;
+    updateField(table, id, el.dataset.field, el.value);
+  }
+});
+document.addEventListener('change', e=>{
+  const el = e.target;
+  if(el.dataset.meta){
+    state.meta[el.dataset.meta] = el.value;
+    if(el.dataset.meta === 'churchName') renderLogo();
+    scheduleReport(); debouncedSave(); return;
+  }
+  if(el.dataset.field && el.closest('tr') && el.closest('table') && el.closest('table').dataset.table){
+    const table = el.closest('table').dataset.table;
+    const id = el.closest('tr').dataset.id;
+    updateField(table, id, el.dataset.field, el.value);
+  }
+});
+document.addEventListener('click', e=>{
+  if(e.target.dataset.caddite) addCateringItem(e.target.dataset.caddite);
+  if(e.target.dataset.cdelgroup) deleteCateringGroup(e.target.dataset.cdelgroup);
+  if(e.target.dataset.cdelitem) deleteCateringItem(e.target.dataset.cid, e.target.dataset.cdelitem);
+  if(e.target.id === 'btnAddCatGroup') addCateringGroup();
+  if(e.target.dataset.add) addRow(e.target.dataset.add);
+  if(e.target.dataset.del) deleteRow(e.target.dataset.table, e.target.dataset.del);
+});
+
+/* ---------- toolbar ---------- */
+document.getElementById('btnSave').addEventListener('click', ()=>{ save(); toast('Saved'); });
+document.getElementById('btnPrint').addEventListener('click', guardedPrint);
+document.getElementById('btnCsv').addEventListener('click', exportCsv);
+document.getElementById('btnCsv2').addEventListener('click', exportCsv);
+document.getElementById('btnPrintTop').addEventListener('click', ()=>{
+  document.querySelector('.tab[data-tab="report"]').click();
+  setTimeout(guardedPrint, 250);
+});
+document.getElementById('btnAutoFill').addEventListener('click', autoFillBudget);
+document.getElementById('btnShare').addEventListener('click', copyShareLink);
+document.getElementById('btnShare2').addEventListener('click', copyShareLink);
+
+document.getElementById('btnExport').addEventListener('click', ()=>{
+  const blob = new Blob([JSON.stringify(state,null,2)], {type:'application/json'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `church-appreciation-backup-${state.meta.eventDate || new Date().toISOString().slice(0,10)}.json`;
+  document.body.appendChild(a); a.click(); a.remove();
+  URL.revokeObjectURL(a.href); toast('Backup downloaded');
+});
+document.getElementById('fileImport').addEventListener('change', e=>{
+  const f = e.target.files[0]; if(!f) return;
+  const r = new FileReader();
+  r.onload = ()=>{
+    try{
+      state = normalizeState(JSON.parse(r.result));
+      renderAll(); save(); toast('Backup imported');
+    }catch(err){ alert('Invalid backup file.'); }
+  };
+  r.readAsText(f);
+  e.target.value = '';
+});
+document.getElementById('btnReset').addEventListener('click', ()=>{
+  if(!confirm('Erase all data and start fresh? This cannot be undone.')) return;
+  state = clone(DEFAULT_STATE);
+  localStorage.removeItem(STORAGE_KEY);
+  renderAll(); toast('Reset complete');
+});
+
+/* ---------- logo controls ---------- */
+document.getElementById('logoFile').addEventListener('change', e=>{
+  handleLogoFile(e.target.files[0]);
+  e.target.value = '';
+});
+document.getElementById('btnRemoveLogo').addEventListener('click', ()=>{
+  if(!state.meta.logo) return;
+  if(!confirm('Remove the church logo?')) return;
+  state.meta.logo = ''; save(); renderLogo(); renderReport(); toast('Logo removed');
+});
+
+/* ---------- datalist for budget categories ---------- */
+(function addDatalist(){
+  const dl = document.createElement('datalist');
+  dl.id = 'cat-list';
+  ["Venue/Decorations","Food/Refreshments","Leaders' Appreciation","Staff Appreciation",
+   "Infirm Support","Program Materials","Sound/Music","Logistics","Publicity","Contingency","Other"]
+    .forEach(c=>{ const o=document.createElement('option'); o.value=c; dl.appendChild(o); });
+  document.body.appendChild(dl);
+})();
+
+/* ---------- datalist for catering item names ---------- */
+(function addItemDatalist(){
+  const dl = document.createElement('datalist');
+  dl.id = 'item-list';
+  ["Jollof rice","Fried rice","Plain rice","Waakye","Banku","Fufu","Kenkey","Chicken","Fish","Goat meat","Beef",
+   "Stew / Sauce","Salad","Shito","Fried plantain","Soft drinks","Bottled water","Sachet water","Juice","Tea / Coffee",
+   "Bread","Cake","Pastries","Snacks","Fruits","Plates","Cups","Spoons / Cutlery","Serviettes","Take-away packs","Cooking gas","Service / Waiters"]
+    .forEach(c=>{ const o=document.createElement('option'); o.value=c; dl.appendChild(o); });
+  document.body.appendChild(dl);
+})();
+
+/* ---------- init ---------- */
+const sharedLoaded = tryLoadShared();
+renderAll();
+if(sharedLoaded){ toast('Shared report loaded into this browser', 3500); }
+</script>
+</body>
+</html>
